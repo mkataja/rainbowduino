@@ -11,7 +11,7 @@ const char *sentences[totalSentences] = {
 const unsigned char minFrameTime = 16;
 const unsigned char scrollTime = 80;
 
-const unsigned char programCount = 6;
+const unsigned char totalPrograms = 6;
 const unsigned int transitionTime = 10000;
 
 float maxBrightness = 1;
@@ -32,16 +32,29 @@ int absColor(float multi) {
   return 255 * multi * brightness;
 }
 
-float sinAlgo(int seed, int divisor, float constant) {
-  return sin(seed % divisor / (float)divisor * 2 * PI + constant);
+int scaledColor(float multi) {
+  return (128 + 127 * multi) * brightness;
+}
+
+template<typename T>
+inline T fastCos(T x) noexcept {
+  constexpr T tp = 1. / (2.*M_PI);
+  x *= tp;
+  x -= T(.25) + floor(x + T(.25));
+  x *= T(16.) * (abs(x) - T(.5));
+  return x;
+}
+
+float cosAlgo(int seed, int divisor, float constant) {
+  return fastCos(seed % divisor / (float)divisor * 2 * PI + constant);
 }
 
 float sinBetween(float min, float max, float t) {
   return ((max - min) * sin(t) + max + min) / 2;
 }
 
-int sinColor(int seed, int divisor, float constant) {
-  return (128 + 127 * sinAlgo(seed, divisor, constant)) * brightness;
+int cosColor(int seed, int divisor, float constant) {
+  return scaledColor(cosAlgo(seed, divisor, constant));
 }
 
 void clearBuffer(unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
@@ -118,9 +131,9 @@ boolean scrollText(unsigned long tElapsed, unsigned char mask[][8], char const *
 }
 
 void setColorGradient(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
-  r[0][0] = sinColor(seed, 29, 0);
-  g[0][0] = sinColor(seed, 53, 2);
-  b[0][0] = sinColor(seed, 37, 4);
+  r[0][0] = cosColor(seed, 29, 0);
+  g[0][0] = cosColor(seed, 53, 2);
+  b[0][0] = cosColor(seed, 37, 4);
 
   for (int x = 7; x >= 0; x--) {
     for (int y = 7; y > 0; y--) {
@@ -137,9 +150,9 @@ void setColorGradient(int seed, unsigned char r[][8], unsigned char g[][8], unsi
 }
 
 void setFullScreenColor(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
-  int vr = sinColor(seed, 29, 0);
-  int vg = sinColor(seed, 53, 2);
-  int vb = sinColor(seed, 37, 4);
+  int vr = cosColor(seed, 29, 0);
+  int vg = cosColor(seed, 53, 2);
+  int vb = cosColor(seed, 37, 4);
   for (int x = 0; x < 8; x++) {
     for (int y = 0; y < 8; y++) {
       r[x][y] = vr;
@@ -152,25 +165,25 @@ void setFullScreenColor(int seed, unsigned char r[][8], unsigned char g[][8], un
 void setColorGradient2(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
   for (int x = 0; x < 8; x++) {
     for (int y = 0; y < 8; y++) {
-      r[x][y] = sinColor(seed, 29, x + y);
-      g[x][y] = sinColor(seed, 13, x + y + 2);
-      b[x][y] = sinColor(seed, 19, x + y + 4);
+      r[x][y] = cosColor(seed, 29, x + y);
+      g[x][y] = cosColor(seed, 13, x + y + 2);
+      b[x][y] = cosColor(seed, 19, x + y + 4);
     }
   }
 }
 
 void setTwisterGradient(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
-  int dy = clamp(0, 7, round((sinAlgo(seed, 50, 0) + 1) * 3.5));
+  int dy = clamp(0, 7, round((cosAlgo(seed, 50, 0) + 1) * 3.5));
   for (int y = 0; y < 8; y++) {
     float d = (sin(y / 7.0) + 1) * 4;
     int yc = clamp(0, 7, (y + dy) % 8);
-    r[0][yc] = sinColor(seed, 29, d / 1.53 + 2);
-    g[0][yc] = sinColor(seed, 53, d / 1.19 + 4);
-    b[0][yc] = sinColor(seed, 37, d / 1.79 + 0);
+    r[0][yc] = cosColor(seed, 29, d / 1.53 + 2);
+    g[0][yc] = cosColor(seed, 53, d / 1.19 + 4);
+    b[0][yc] = cosColor(seed, 37, d / 1.79 + 0);
   }
 
   const int dmul = 2;
-  int yd = clamp(-dmul, dmul, round(sinAlgo(seed, 79, 0) * dmul));
+  int yd = clamp(-dmul, dmul, round(cosAlgo(seed, 79, 0) * dmul));
   for (int x = 7; x > 0; x--) {
     for (int y = 0; y < 8; y++) {
       int yc = clamp(0, 7, (y + yd) % 8);
@@ -182,7 +195,7 @@ void setTwisterGradient(int seed, unsigned char r[][8], unsigned char g[][8], un
 }
 
 unsigned char setBgProgram(int step, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
-  int program = (uptime / transitionTime % programCount);
+  int program = (uptime / transitionTime % totalPrograms);
   switch (program) {
     case 0:
       setTwisterGradient(step, r, g, b);
