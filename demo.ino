@@ -15,7 +15,7 @@ const unsigned char totalPrograms = 6;
 const unsigned int transitionTime = 10000;
 
 float maxBrightness = 1;
-float minBrightness = 0.15;
+float minBrightness = 0.2;
 
 long uptime;
 float brightness;
@@ -239,10 +239,10 @@ void loop() {
     unsigned long frameStart = millis();
     uptime = frameStart - programStart;
 
-    if (uptime > 1800000) {
-      minBrightness = 0.02;
+    if (uptime > 900000) {
+      minBrightness = 0.1;
     }
-    maxBrightness = fclamp(minBrightness, 1, 1 - uptime / 3600000.0);
+    maxBrightness = fclamp(minBrightness, 1, 1 - uptime / 1800000.0);
     brightness = minBrightness + (maxBrightness - minBrightness) * pow(1 - pow(((uptime + 1500) % 3000 / 1500.0) - 1, 2), 4);
 
     // Switch active frame buffer every other frame
