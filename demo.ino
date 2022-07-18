@@ -88,8 +88,6 @@ void setCharMask(unsigned char ascii, int poX, int poY, unsigned char mask[][8])
       if (x >= 0 && x < 8 && y >= 0 && y < 8) {
         if ((line >> f) & 0x01) {
           mask[y][x] = 0xFF;
-        } else {
-          //mask[y][x] = 0x00;
         }
       }
     }
@@ -219,6 +217,115 @@ unsigned char setBgProgram(int step, unsigned char r[][8], unsigned char g[][8],
   return program;
 }
 
+void setExpander(unsigned char mask[][8]) {
+  int state = 3 - (uptime / 80 % 5);
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 8; y++) {
+      if ((x == state || x == 7 - state) && y >= state && y <= 7 - state) {
+        mask[x][y] = 0xFF;
+      }
+      if ((y == state || y == 7 - state) && x >= state && x <= 7 - state) {
+        mask[x][y] = 0xFF;
+      }
+    }
+  }
+}
+
+void setExpander2(unsigned char mask[][8]) {
+  int state = 3 - (uptime / 80 % 5);
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 8; y++) {
+      if (x >= state && x <= 7 - state && y >= state && y <= 7 - state) {
+        mask[x][y] = 0xFF;
+      }
+      if (y >= state && y <= 7 - state && x >= state && x <= 7 - state) {
+        mask[x][y] = 0xFF;
+      }
+    }
+  }
+}
+
+void setExpanderX(unsigned char mask[][8]) {
+  int state = 3 - (uptime / 80 % 5);
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 8; y++) {
+      if (x == state || x == 7 - state) {
+        mask[x][y] = 0xFF;
+      }
+    }
+  }
+}
+
+void setExpanderY(unsigned char mask[][8]) {
+  int state = 3 - (uptime / 80 % 5);
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 8; y++) {
+      if (y == state || y == 7 - state) {
+        mask[x][y] = 0xFF;
+      }
+    }
+  }
+}
+
+void setScanX(unsigned char mask[][8]) {
+  int state = abs(7 - uptime / 500 % 16);
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 8; y++) {
+      if (y == state) {
+        mask[x][y] = 0xFF;
+      }
+    }
+  }
+}
+
+void setScanY(unsigned char mask[][8]) {
+  int state = abs(7 - uptime / 500 % 16);
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 8; y++) {
+      if (x == state) {
+        mask[x][y] = 0xFF;
+      }
+    }
+  }
+}
+
+unsigned char setFgProgram(unsigned char mask[][8]) {
+  if (uptime < 300000) {
+    return -1;
+  }
+
+  fillMask(mask, 0);
+  int program = (uptime / 2000 % 24);
+  switch (program) {
+    case 4:
+      setExpanderY(mask);
+      break;
+    case 7:
+      setExpanderX(mask);
+      break;
+    case 12:
+      setExpander(mask);
+      break;
+    case 13:
+      setExpander2(mask);
+      break;
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+      setScanX(mask);
+      break;
+    case 22:
+    case 23:
+      setScanY(mask);
+      break;
+    default:
+      fillMask(mask, 0xFF);
+      break;
+  }
+  return program;
+}
+
 unsigned char r1[8][8], g1[8][8], b1[8][8];
 unsigned char r2[8][8], g2[8][8], b2[8][8];
 unsigned char (*r)[8], (*g)[8], (*b)[8];
@@ -260,6 +367,8 @@ void loop() {
         scrollStart = frameStart;
       }
       previousProgram = currentProgram;
+
+      setFgProgram(mask);
     } else {
       setFullScreenColor(i, r, g, b);
       int randSentence = scrollStart % totalSentences;
