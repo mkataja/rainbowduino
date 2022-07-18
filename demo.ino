@@ -8,10 +8,10 @@ const char *sentences[totalSentences] = {
   "<3 <3 <3    "
 };
 
-const unsigned int minFrameTime = 16;
-const unsigned int scrollTime = 80;
+const unsigned char minFrameTime = 16;
+const unsigned char scrollTime = 80;
 
-const unsigned int programCount = 6;
+const unsigned char programCount = 6;
 const unsigned int transitionTime = 10000;
 
 float maxBrightness = 1;
@@ -28,23 +28,23 @@ float fclamp(float mn, float mx, float val) {
   return fmax(mn, fmin(mx, val));
 }
 
+int absColor(float multi) {
+  return 255 * multi * brightness;
+}
+
 float sinAlgo(int seed, int divisor, float constant) {
-  return sin(seed % divisor / (float)divisor * 2 * 3.14159 + constant);
+  return sin(seed % divisor / (float)divisor * 2 * PI + constant);
 }
 
 float sinBetween(float min, float max, float t) {
   return ((max - min) * sin(t) + max + min) / 2;
 }
 
-int scaleColor(float multi) {
-  return (128 + 127 * multi) * brightness;
-}
-
 int sinColor(int seed, int divisor, float constant) {
-  return scaleColor(sinAlgo(seed, divisor, constant));
+  return (128 + 127 * sinAlgo(seed, divisor, constant)) * brightness;
 }
 
-void clearBuffer(unsigned int r[][8], unsigned int g[][8], unsigned int b[][8]) {
+void clearBuffer(unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
   for (int x = 0; x < 8; x++) {
     for (int y = 0; y < 8; y++) {
       r[x][y] = 0;
@@ -54,7 +54,7 @@ void clearBuffer(unsigned int r[][8], unsigned int g[][8], unsigned int b[][8]) 
   }
 }
 
-void fillMask(unsigned int mask[][8], unsigned int value) {
+void fillMask(unsigned char mask[][8], unsigned char value) {
   for (int x = 0; x < 8; x++) {
     for (int y = 0; y < 8; y++) {
       mask[x][y] = value;
@@ -62,7 +62,7 @@ void fillMask(unsigned int mask[][8], unsigned int value) {
   }
 }
 
-void setCharMask(unsigned char ascii, int poX, int poY, unsigned int mask[][8]) {
+void setCharMask(unsigned char ascii, int poX, int poY, unsigned char mask[][8]) {
   if ((ascii < 0x20) || (ascii > 0x7e)) {
     // Unsupported char.
     ascii = '?';
@@ -83,13 +83,13 @@ void setCharMask(unsigned char ascii, int poX, int poY, unsigned int mask[][8]) 
   }
 }
 
-boolean scrollText(unsigned int tElapsed, unsigned int mask[][8], char const *str) {
+boolean scrollText(unsigned long tElapsed, unsigned char mask[][8], char const *str) {
   fillMask(mask, 0);
 
-  unsigned int len = strlen(str);
+  unsigned char len = strlen(str);
   unsigned int scrollOffset = (tElapsed / scrollTime) % (len * 5); // Yeah char lengths are not counted properly here, doesn't matter
 
-  unsigned int i;
+  unsigned char i;
   int charX = -scrollOffset + 8;
   for (i = 0; i < len; i++) {
     if (charX > 8) {
@@ -99,7 +99,7 @@ boolean scrollText(unsigned int tElapsed, unsigned int mask[][8], char const *st
       setCharMask(str[i], charX, 0, mask);
     }
 
-    unsigned int charLength;
+    unsigned char charLength;
     switch (str[i]) {
       case ' ':
         charLength = 4;
@@ -117,7 +117,7 @@ boolean scrollText(unsigned int tElapsed, unsigned int mask[][8], char const *st
   return i == len; // Means scroll was finished
 }
 
-void setColorGradient(int seed, unsigned int r[][8], unsigned int g[][8], unsigned int b[][8]) {
+void setColorGradient(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
   r[0][0] = sinColor(seed, 29, 0);
   g[0][0] = sinColor(seed, 53, 2);
   b[0][0] = sinColor(seed, 37, 4);
@@ -136,7 +136,7 @@ void setColorGradient(int seed, unsigned int r[][8], unsigned int g[][8], unsign
   }
 }
 
-void setFullScreenColor(int seed, unsigned int r[][8], unsigned int g[][8], unsigned int b[][8]) {
+void setFullScreenColor(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
   int vr = sinColor(seed, 29, 0);
   int vg = sinColor(seed, 53, 2);
   int vb = sinColor(seed, 37, 4);
@@ -149,7 +149,7 @@ void setFullScreenColor(int seed, unsigned int r[][8], unsigned int g[][8], unsi
   }
 }
 
-void setColorGradient2(int seed, unsigned int r[][8], unsigned int g[][8], unsigned int b[][8]) {
+void setColorGradient2(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
   for (int x = 0; x < 8; x++) {
     for (int y = 0; y < 8; y++) {
       r[x][y] = sinColor(seed, 29, x + y);
@@ -159,7 +159,7 @@ void setColorGradient2(int seed, unsigned int r[][8], unsigned int g[][8], unsig
   }
 }
 
-void setTwisterGradient(int seed, unsigned int r[][8], unsigned int g[][8], unsigned int b[][8]) {
+void setTwisterGradient(int seed, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
   int dy = clamp(0, 7, round((sinAlgo(seed, 50, 0) + 1) * 3.5));
   for (int y = 0; y < 8; y++) {
     float d = (sin(y / 7.0) + 1) * 4;
@@ -181,7 +181,7 @@ void setTwisterGradient(int seed, unsigned int r[][8], unsigned int g[][8], unsi
   }
 }
 
-unsigned int setBgProgram(int step, unsigned int r[][8], unsigned int g[][8], unsigned int b[][8]) {
+unsigned char setBgProgram(int step, unsigned char r[][8], unsigned char g[][8], unsigned char b[][8]) {
   int program = (uptime / transitionTime % programCount);
   switch (program) {
     case 0:
@@ -191,26 +191,26 @@ unsigned int setBgProgram(int step, unsigned int r[][8], unsigned int g[][8], un
       setColorGradient2(step, r, g, b);
       break;
     case 2:
-      setTwisterGradient(step, r, g, b);
-      break;
-    case 3:
       setColorGradient(step, r, g, b);
       break;
-    case 4:
+    case 3:
       setTwisterGradient(step, r, g, b);
       break;
-    case 5:
+    case 4:
       setFullScreenColor(step, r, g, b);
+      break;
+    case 5:
+      setTwisterGradient(step, r, g, b);
       break;
   }
   return program;
 }
 
-unsigned int r1[8][8], g1[8][8], b1[8][8];
-unsigned int r2[8][8], g2[8][8], b2[8][8];
-unsigned int (*r)[8], (*g)[8], (*b)[8];
-unsigned int (*rp)[8], (*gp)[8], (*bp)[8];
-unsigned int mask[8][8];
+unsigned char r1[8][8], g1[8][8], b1[8][8];
+unsigned char r2[8][8], g2[8][8], b2[8][8];
+unsigned char (*r)[8], (*g)[8], (*b)[8];
+unsigned char (*rp)[8], (*gp)[8], (*bp)[8];
+unsigned char mask[8][8];
 
 void loop() {
   long programStart = millis();
@@ -242,7 +242,7 @@ void loop() {
     }
 
     if (scrollStart < 0) {
-      unsigned int currentProgram = setBgProgram(i, r, g, b);
+      unsigned char currentProgram = setBgProgram(i, r, g, b);
       if (currentProgram == 0 && previousProgram != 0) {
         scrollStart = frameStart;
       }
