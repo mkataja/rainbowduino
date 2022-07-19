@@ -6,7 +6,7 @@ const int totalSentences = 3;
 const char *sentences[totalSentences] = {
   "you are wonderful <3 <3 <3    ",
   "<3 <3 <3      ",
-  "remember: boom never really ends    ",
+  "remember: boom never really ends    "
 };
 
 const unsigned char minFrameTime = 20;
@@ -16,7 +16,7 @@ const unsigned char totalPrograms = 8;
 const unsigned int transitionTime = 6000;
 
 float maxBrightness = 1;
-float minBrightness = 0.2;
+float minBrightness = 0.15;
 
 long uptime;
 float brightness;
@@ -286,7 +286,7 @@ void setScanX(unsigned char mask[][8]) {
 }
 
 unsigned char setFgProgram(unsigned char mask[][8]) {
-  if (uptime < 300000) {
+  if (uptime < 600000) {
     fillMask(mask, 0xFF);
     return -1;
   }
@@ -331,7 +331,7 @@ void loop() {
     uptime = frameStart - programStart;
 
     if (uptime > 900000) {
-      minBrightness = 0.1;
+      minBrightness = 0.08;
     }
     maxBrightness = fclamp(minBrightness, 1, 1 - uptime / 1800000.0);
     brightness = minBrightness + (maxBrightness - minBrightness) * pow(1 - pow(((uptime + 1500) % 3000 / 1500.0) - 1, 2), 4);
