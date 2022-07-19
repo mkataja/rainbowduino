@@ -99,7 +99,7 @@ boolean scrollText(unsigned long tElapsed, unsigned char mask[][8], char const *
   fillMask(mask, 0);
 
   unsigned char len = strlen(str);
-  unsigned int scrollOffset = (tElapsed / scrollTime) % (len * 5); // Yeah char lengths are not counted properly here, doesn't matter
+  unsigned int scrollOffset = (tElapsed / scrollTime);
 
   unsigned char i;
   int charX = -scrollOffset + 8;
