@@ -245,7 +245,7 @@ void setExpander2(unsigned char mask[][8]) {
   }
 }
 
-void setExpanderX(unsigned char mask[][8]) {
+void setExpanderY(unsigned char mask[][8]) {
   int state = 3 - (uptime / 80 % 5);
   for (int x = 0; x < 8; x++) {
     for (int y = 0; y < 8; y++) {
@@ -256,19 +256,8 @@ void setExpanderX(unsigned char mask[][8]) {
   }
 }
 
-void setExpanderY(unsigned char mask[][8]) {
-  int state = 3 - (uptime / 80 % 5);
-  for (int x = 0; x < 8; x++) {
-    for (int y = 0; y < 8; y++) {
-      if (y == state || y == 7 - state) {
-        mask[x][y] = 0xFF;
-      }
-    }
-  }
-}
-
 void setScanX(unsigned char mask[][8]) {
-  int state = abs(7 - uptime / 500 % 16);
+  int state = abs(8 - uptime / 500 % 16);
   for (int x = 0; x < 8; x++) {
     for (int y = 0; y < 8; y++) {
       if (y == state) {
@@ -278,46 +267,29 @@ void setScanX(unsigned char mask[][8]) {
   }
 }
 
-void setScanY(unsigned char mask[][8]) {
-  int state = abs(7 - uptime / 500 % 16);
-  for (int x = 0; x < 8; x++) {
-    for (int y = 0; y < 8; y++) {
-      if (x == state) {
-        mask[x][y] = 0xFF;
-      }
-    }
-  }
-}
-
 unsigned char setFgProgram(unsigned char mask[][8]) {
   if (uptime < 300000) {
+    fillMask(mask, 0xFF);
     return -1;
   }
 
   fillMask(mask, 0);
   int program = (uptime / 2000 % 24);
   switch (program) {
-    case 4:
+    case 8:
       setExpanderY(mask);
       break;
-    case 7:
-      setExpanderX(mask);
-      break;
-    case 12:
+    case 13:
       setExpander(mask);
       break;
-    case 13:
+    case 14:
       setExpander2(mask);
       break;
-    case 16:
-    case 17:
     case 18:
     case 19:
+    case 20:
+    case 21:
       setScanX(mask);
-      break;
-    case 22:
-    case 23:
-      setScanY(mask);
       break;
     default:
       fillMask(mask, 0xFF);
@@ -337,8 +309,6 @@ void loop() {
   long scrollStart = -1;
 
   for (unsigned int i = 0; i < 56869; i++) {
-    fillMask(mask, 0xFF);
-
     unsigned long frameStart = millis();
     uptime = frameStart - programStart;
 
