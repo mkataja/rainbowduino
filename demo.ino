@@ -11,8 +11,8 @@ const char *sentences[totalSentences] = {
 const unsigned char minFrameTime = 16;
 const unsigned char scrollTime = 80;
 
-const unsigned char totalPrograms = 6;
-const unsigned int transitionTime = 10000;
+const unsigned char totalPrograms = 8;
+const unsigned int transitionTime = 6000;
 
 float maxBrightness = 1;
 float minBrightness = 0.2;
@@ -199,18 +199,24 @@ unsigned char setBgProgram(int step, unsigned char r[][8], unsigned char g[][8],
       setTwisterGradient(step, r, g, b);
       break;
     case 1:
-      setColorGradient2(step, r, g, b);
-      break;
-    case 2:
-      setColorGradient(step, r, g, b);
-      break;
-    case 3:
       setTwisterGradient(step, r, g, b);
       break;
+    case 2:
+      setColorGradient2(step, r, g, b);
+      break;
+    case 3:
+      setColorGradient(step, r, g, b);
+      break;
     case 4:
-      setFullScreenColor(step, r, g, b);
+      setTwisterGradient(step, r, g, b);
       break;
     case 5:
+      setTwisterGradient(step, r, g, b);
+      break;
+    case 6:
+      setFullScreenColor(step, r, g, b);
+      break;
+    case 7:
       setTwisterGradient(step, r, g, b);
       break;
   }
