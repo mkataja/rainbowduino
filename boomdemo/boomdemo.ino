@@ -372,5 +372,6 @@ void loop() {
 
 void setup() {
   Rb.init();
+  Rb.clearDisplay();
   randomSeed(analogRead(0));
 }
