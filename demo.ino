@@ -112,10 +112,21 @@ boolean scrollText(unsigned long tElapsed, unsigned char mask[][8], char const *
 
     unsigned char charLength;
     switch (str[i]) {
+      case '\'':
+        charLength = 3;
+        break;
       case ' ':
+      case 'i':
+      case 'l':
         charLength = 4;
         break;
+      case '^':
+      case 'a':
+      case 'b':
       case 'd':
+      case 'e':
+      case 'm':
+      case 'v':
       case 'w':
         charLength = 6;
         break;
