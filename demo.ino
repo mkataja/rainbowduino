@@ -8,7 +8,7 @@ const char *sentences[totalSentences] = {
   "<3 <3 <3    "
 };
 
-const unsigned char minFrameTime = 16;
+const unsigned char minFrameTime = 20;
 const unsigned char scrollTime = 80;
 
 const unsigned char totalPrograms = 8;
