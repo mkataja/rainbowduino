@@ -2,10 +2,11 @@
 
 #include <Rainbowduino.h>
 
-const int totalSentences = 2;
+const int totalSentences = 3;
 const char *sentences[totalSentences] = {
-  "you are wonderful <3 <3 <3  ",
-  "<3 <3 <3    "
+  "you are wonderful <3 <3 <3    ",
+  "<3 <3 <3      ",
+  "remember: boom never really ends    ",
 };
 
 const unsigned char minFrameTime = 20;
