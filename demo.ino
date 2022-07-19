@@ -326,16 +326,12 @@ unsigned char setFgProgram(unsigned char mask[][8]) {
   return program;
 }
 
-unsigned char r1[8][8], g1[8][8], b1[8][8];
-unsigned char r2[8][8], g2[8][8], b2[8][8];
-unsigned char (*r)[8], (*g)[8], (*b)[8];
-unsigned char (*rp)[8], (*gp)[8], (*bp)[8];
-unsigned char mask[8][8];
-
 void loop() {
+  unsigned char r[8][8], g[8][8], b[8][8];
+  unsigned char mask[8][8];
+
   long programStart = millis();
-  clearBuffer(r1, g1, b1);
-  clearBuffer(r2, g2, b2);
+  clearBuffer(r, g, b);
 
   int previousProgram = 0;
   long scrollStart = -1;
@@ -351,15 +347,6 @@ void loop() {
     }
     maxBrightness = fclamp(minBrightness, 1, 1 - uptime / 1800000.0);
     brightness = minBrightness + (maxBrightness - minBrightness) * pow(1 - pow(((uptime + 1500) % 3000 / 1500.0) - 1, 2), 4);
-
-    // Switch active frame buffer every other frame
-    if (i % 2 == 0) {
-      r = r1; g = g1; b = b1;
-      rp = r2; gp = g2; bp = b2;
-    } else {
-      r = r2; g = g2; b = b2;
-      rp = r1; gp = g1; bp = b1;
-    }
 
     if (scrollStart < 0) {
       unsigned char currentProgram = setBgProgram(i, r, g, b);
